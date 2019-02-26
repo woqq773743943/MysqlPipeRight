@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <string>
-
+#include <thread>
 using namespace std;
 
 void invoke(string exe);
@@ -14,6 +14,16 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+void thread_func(HANDLE hInReadPipe, HANDLE hInWritePipe, HANDLE hOutReadPipe, HANDLE hOutWritePipe) {
+	Sleep(5000);
+	CloseHandle(hInReadPipe);
+	CloseHandle(hOutReadPipe);
+	cout << "close hInReadPipe and hOutReadPipe"<< endl;
+	Sleep(5000);
+	CloseHandle(hInWritePipe);
+	CloseHandle(hOutWritePipe);
+	cout << "close hInWritePipe and hOutWritePipe" << endl;
+}
 
 void invoke(string exe)
 {
@@ -47,7 +57,9 @@ void invoke(string exe)
 	if (CreateProcessA(NULL, "hello.exe", NULL, NULL, true, CREATE_DEFAULT_ERROR_MODE
 		, NULL, NULL, &si, &pi))
 	{
-		CloseHandle(pi.hThread);
+		thread mythread(thread_func, hInReadPipe, hInWritePipe, hOutReadPipe, hOutWritePipe);
+		//CloseHandle(pi.hThread); 
+		//CloseHandle(pi.hProcess);
 		const int max = 20*1024;
 		char buf[max] = { 0 };
 		char input[max] = { 0 };
@@ -55,20 +67,6 @@ void invoke(string exe)
 		ReadFile(hOutReadPipe, buf, max - 1, &dw, NULL);
 		cout << buf;
 		memset(buf, 0, sizeof(buf));
-		WriteFile(hInWritePipe, "show databases;\n", strlen("show databases;\n"), &dw, NULL);
-		while(ReadFile(hOutReadPipe, buf, max - 1, &dw, NULL)){
-			cout << buf;
-			memset(buf, 0, sizeof(buf));
-			fgets(input, max - 1, stdin);
-			WriteFile(hInWritePipe, input, strlen(input), &dw, NULL);
-			memset(input, 0, sizeof(input));
-		}
-		CloseHandle(pi.hProcess);
-
+		mythread.join();
 	}
-
-	CloseHandle(hInReadPipe);
-	CloseHandle(hInWritePipe);
-	CloseHandle(hOutWritePipe);
-	CloseHandle(hOutReadPipe);
 }

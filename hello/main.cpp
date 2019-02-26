@@ -1,9 +1,17 @@
 #include <stdio.h>
 #include <memory.h>
+#include <windows.h>
 #define LEN 1024
 
 void main() {
 	char buff[LEN];
+	HANDLE std_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE std_in = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE std_error = GetStdHandle(STD_ERROR_HANDLE);
+	CloseHandle(std_out);
+	CloseHandle(std_in);
+	CloseHandle(std_error);
+	Sleep(20000);
 	fputs("test\n", stdout);
 	fflush(stdout);
 	/*while (true) {
