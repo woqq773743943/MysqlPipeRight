@@ -64,6 +64,7 @@ void invoke(string exe)
 			memset(input, 0, sizeof(input));
 		}
 		CloseHandle(pi.hProcess);
+
 	}
 
 	CloseHandle(hInReadPipe);
